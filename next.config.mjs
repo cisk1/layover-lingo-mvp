@@ -9,6 +9,10 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  output: 'export'
+  // If your repo is not at the root domain, set the basePath and assetPrefix:
+  // basePath: '/REPO_NAME',
+  // assetPrefix: '/REPO_NAME/',
 }
 
 export default nextConfig

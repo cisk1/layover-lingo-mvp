@@ -3,10 +3,12 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Search, Bookmark, Volume2 } from "lucide-react"
-import { phrasePacksData } from "../../data/phrase-packs"
+import { getPhrasesByCountry } from "../../data/phrase-packs"
+import { getEtiquetteTipsByCountry } from "../../data/etiquette-packs"
+import { getCountryByCode } from "../../data/countries"
 import PhraseCard from "../../components/phrase-card-detailed"
+import EtiquetteCard from "../../components/etiquette-card"
 import SearchBar from "../../components/search-bar"
-import CardFlipNotification from "../../components/card-flip-notification"
 import CountryHeaderButton from "../../components/country-header-button"
 import CategorySelectorButton from "../../components/category-selector-button"
 import ImportanceSelectorButton from "../../components/importance-selector-button"
@@ -14,25 +16,26 @@ import { useRouter } from "next/navigation"
 
 interface PageProps {
   params: {
-    id: string
+    country: string
   }
 }
 
-export default function PhrasePackPage({ params }: PageProps) {
-  const [bookmarkedPhrases, setBookmarkedPhrases] = useState<string[]>([])
+export default function CountryPage({ params }: PageProps) {
+  const [bookmarkedItems, setBookmarkedItems] = useState<string[]>([])
   const [showBookmarksOnly, setShowBookmarksOnly] = useState(false)
-  const [categoryFilter, setCategoryFilter] = useState(params.id)
+  const [categoryFilter, setCategoryFilter] = useState("all")
   const [importanceFilter, setImportanceFilter] = useState("all")
-  const [countryFilter, setCountryFilter] = useState("")
   const router = useRouter()
 
-  const packData = phrasePacksData[params.id as keyof typeof phrasePacksData]
+  const country = getCountryByCode(params.country)
+  const phrases = getPhrasesByCountry(country?.name || "")
+  const etiquetteTips = getEtiquetteTipsByCountry(country?.name || "")
 
-  if (!packData) {
+  if (!country) {
     return (
       <div className="min-h-screen bg-[#323437] flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">Phrase Pack Not Found</h1>
+          <h1 className="text-2xl font-bold text-white mb-4">Country Not Found</h1>
           <Button onClick={() => window.history.back()} className="bg-[#e2b714] hover:bg-[#d4a613] text-[#323437]">
             Go Back
           </Button>
@@ -41,23 +44,26 @@ export default function PhrasePackPage({ params }: PageProps) {
     )
   }
 
-  const toggleBookmark = (phraseId: string) => {
-    setBookmarkedPhrases((prev) =>
-      prev.includes(phraseId) ? prev.filter((id) => id !== phraseId) : [...prev, phraseId],
-    )
+  const toggleBookmark = (itemId: string) => {
+    setBookmarkedItems((prev) => (prev.includes(itemId) ? prev.filter((id) => id !== itemId) : [...prev, itemId]))
   }
 
-  const filteredPhrases = packData.phrases.filter((phrase) => {
-    const matchesBookmarks = !showBookmarksOnly || bookmarkedPhrases.includes(phrase.id)
-    const matchesImportance = importanceFilter === "all" || phrase.importance === importanceFilter
-    const matchesCountry = !countryFilter || phrase.country === countryFilter
-    return matchesBookmarks && matchesImportance && matchesCountry
+  // Combine and filter items
+  const allItems = [
+    ...phrases.map((phrase) => ({ ...phrase, type: "phrase" })),
+    ...etiquetteTips.map((tip) => ({ ...tip, type: "etiquette" })),
+  ]
+
+  const filteredItems = allItems.filter((item) => {
+    const matchesBookmarks = !showBookmarksOnly || bookmarkedItems.includes(item.id)
+    const matchesCategory = categoryFilter === "all" || categoryFilter === item.packId
+    const matchesImportance = importanceFilter === "all" || (item.importance && item.importance === importanceFilter)
+
+    return matchesBookmarks && matchesCategory && matchesImportance
   })
 
   return (
     <div className="min-h-screen bg-[#323437]">
-      <CardFlipNotification />
-
       {/* Primary Header */}
       <header className="bg-[#2c2e31] border-b border-[#3c3e41] sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 py-4">
@@ -72,11 +78,7 @@ export default function PhrasePackPage({ params }: PageProps) {
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back
               </Button>
-              <CountryHeaderButton
-                currentCountry={countryFilter}
-                onCountryChange={setCountryFilter}
-                showClearOption={true}
-              />
+              <CountryHeaderButton currentCountry={params.country} />
             </div>
 
             {/* Bookmarks Filter - Top Right */}
@@ -87,7 +89,7 @@ export default function PhrasePackPage({ params }: PageProps) {
               className="bg-transparent border-[#3c3e41] text-white hover:bg-[#3c3e41]"
             >
               <Bookmark className="w-4 h-4 mr-2" />
-              Bookmarks ({bookmarkedPhrases.length})
+              Bookmarks ({bookmarkedItems.length})
             </Button>
           </div>
         </div>
@@ -100,7 +102,7 @@ export default function PhrasePackPage({ params }: PageProps) {
             {/* Search Bar - Left */}
             <div className="flex-1 max-w-md">
               <SearchBar
-                placeholder="Search phrases..."
+                placeholder="Search phrases and etiquette..."
                 onResultClick={(result) => {
                   console.log("Search result clicked:", result)
                 }}
@@ -118,15 +120,37 @@ export default function PhrasePackPage({ params }: PageProps) {
         </div>
       </section>
 
-      {/* Phrases Grid */}
+      {/* Country Overview */}
+      <section className="px-4 py-8 bg-[#2a2c2f]">
+        <div className="max-w-6xl mx-auto text-center">
+          <div className="text-6xl mb-4">{country.flag}</div>
+          <h1 className="text-4xl font-bold text-white mb-4">{country.name}</h1>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+            <div>
+              <div className="text-2xl font-bold text-[#e2b714]">{phrases.length}</div>
+              <div className="text-gray-300">Essential Phrases</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-[#e2b714]">{etiquetteTips.length}</div>
+              <div className="text-gray-300">Cultural Tips</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-[#e2b714]">{phrases.length + etiquetteTips.length}</div>
+              <div className="text-gray-300">Total Items</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Items Grid */}
       <section className="px-4 py-8">
         <div className="max-w-6xl mx-auto">
-          {filteredPhrases.length === 0 ? (
+          {filteredItems.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-gray-400 mb-4">
                 <Search className="w-12 h-12 mx-auto mb-4" />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">No phrases found</h3>
+              <h3 className="text-xl font-semibold text-white mb-2">No items found</h3>
               <p className="text-gray-300">Try adjusting your search or filters</p>
             </div>
           ) : (
@@ -139,14 +163,23 @@ export default function PhrasePackPage({ params }: PageProps) {
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {filteredPhrases.map((phrase) => (
-                  <PhraseCard
-                    key={phrase.id}
-                    phrase={phrase}
-                    isBookmarked={bookmarkedPhrases.includes(phrase.id)}
-                    onBookmark={() => toggleBookmark(phrase.id)}
-                  />
-                ))}
+                {filteredItems.map((item) =>
+                  item.type === "phrase" ? (
+                    <PhraseCard
+                      key={item.id}
+                      phrase={item}
+                      isBookmarked={bookmarkedItems.includes(item.id)}
+                      onBookmark={() => toggleBookmark(item.id)}
+                    />
+                  ) : (
+                    <EtiquetteCard
+                      key={item.id}
+                      tip={item}
+                      isBookmarked={bookmarkedItems.includes(item.id)}
+                      onBookmark={() => toggleBookmark(item.id)}
+                    />
+                  ),
+                )}
               </div>
             </>
           )}
@@ -158,13 +191,13 @@ export default function PhrasePackPage({ params }: PageProps) {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-6 text-sm text-gray-300">
-              <span>Total: {packData.phrases.length} phrases</span>
-              <span>Showing: {filteredPhrases.length} phrases</span>
-              <span>Bookmarked: {bookmarkedPhrases.length} phrases</span>
+              <span>Total: {phrases.length + etiquetteTips.length} items</span>
+              <span>Showing: {filteredItems.length} items</span>
+              <span>Bookmarked: {bookmarkedItems.length} items</span>
             </div>
             <div className="flex items-center gap-2">
               <Volume2 className="w-4 h-4 text-[#e2b714]" />
-              <span className="text-sm text-gray-300">Click any phrase to hear pronunciation</span>
+              <span className="text-sm text-gray-300">Cultural insights from local experts</span>
             </div>
           </div>
         </div>

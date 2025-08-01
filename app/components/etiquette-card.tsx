@@ -4,41 +4,31 @@ import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Play, Bookmark, BookmarkCheck, Volume2, AlertTriangle, Info, CheckCircle } from "lucide-react"
+import { Bookmark, BookmarkCheck, AlertTriangle, Info, CheckCircle } from "lucide-react"
 import CountryFlag from "./country-flag"
 import { getCountryByCode } from "../data/countries"
 
-interface Phrase {
+interface EtiquetteTip {
   id: string
-  phrase: string
-  romanization: string
-  translation: string
-  culturalNote: string
-  language: string
+  title: string
+  summary: string
+  detail: string
   country: string
-  importance: "low" | "medium" | "high"
-  context: string
+  severity: "low" | "medium" | "high"
+  category: string
 }
 
-interface PhraseCardProps {
-  phrase: Phrase
+interface EtiquetteCardProps {
+  tip: EtiquetteTip
   isBookmarked: boolean
   onBookmark: () => void
 }
 
-export default function PhraseCardDetailed({ phrase, isBookmarked, onBookmark }: PhraseCardProps) {
+export default function EtiquetteCard({ tip, isBookmarked, onBookmark }: EtiquetteCardProps) {
   const [isFlipped, setIsFlipped] = useState(false)
-  const [isPlaying, setIsPlaying] = useState(false)
 
-  const playAudio = async () => {
-    setIsPlaying(true)
-    // Simulate audio playback
-    setTimeout(() => setIsPlaying(false), 2000)
-    console.log(`Playing audio for: ${phrase.phrase}`)
-  }
-
-  const getImportanceColor = (importance: string) => {
-    switch (importance) {
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
       case "low":
         return "bg-green-500"
       case "medium":
@@ -50,8 +40,8 @@ export default function PhraseCardDetailed({ phrase, isBookmarked, onBookmark }:
     }
   }
 
-  const getImportanceIcon = (importance: string) => {
-    switch (importance) {
+  const getSeverityIcon = (severity: string) => {
+    switch (severity) {
       case "low":
         return <CheckCircle className="w-4 h-4" />
       case "medium":
@@ -79,46 +69,31 @@ export default function PhraseCardDetailed({ phrase, isBookmarked, onBookmark }:
         >
           <div>
             <div className="flex justify-between items-start mb-4">
-              <Badge className={`${getImportanceColor(phrase.importance)} text-white text-xs flex items-center gap-1`}>
-                {getImportanceIcon(phrase.importance)}
-                {phrase.importance}
+              <Badge className={`${getSeverityColor(tip.severity)} text-white text-xs flex items-center gap-1`}>
+                {getSeverityIcon(tip.severity)}
+                {tip.severity}
               </Badge>
               <div className="flex items-center">
                 <CountryFlag
-                  flag={getCountryByCode(phrase.country.toLowerCase().replace(/\s+/g, "-"))?.flag || "🌍"}
+                  flag={getCountryByCode(tip.country.toLowerCase().replace(/\s+/g, "-"))?.flag || "🌍"}
                   fallback={
-                    getCountryByCode(phrase.country.toLowerCase().replace(/\s+/g, "-"))?.fallback ||
-                    phrase.country.slice(0, 2).toUpperCase()
+                    getCountryByCode(tip.country.toLowerCase().replace(/\s+/g, "-"))?.fallback ||
+                    tip.country.slice(0, 2).toUpperCase()
                   }
                   size="md"
                 />
               </div>
             </div>
 
-            <div className="text-center mb-4">
-              <div className="text-2xl font-bold text-[#e2b714] mb-2">{phrase.phrase}</div>
-              <div className="text-sm text-gray-300 mb-3">{phrase.romanization}</div>
-              <div className="text-lg text-white mb-3">{phrase.translation}</div>
+            <div className="mb-4">
+              <h3 className="text-xl font-bold text-[#e2b714] mb-3">{tip.title}</h3>
+              <p className="text-white text-sm leading-relaxed">{tip.summary}</p>
             </div>
 
-            <div className="text-xs text-gray-400 text-center mb-4">Context: {phrase.context}</div>
+            <div className="text-xs text-gray-400 capitalize">Category: {tip.category.replace("-", " ")}</div>
           </div>
 
-          <div className="flex justify-between items-center">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation()
-                playAudio()
-              }}
-              disabled={isPlaying}
-              className="bg-[#3c3e41] hover:bg-[#4a4c4f] text-white border-0 flex items-center gap-2"
-            >
-              {isPlaying ? <Volume2 className="w-4 h-4 animate-pulse" /> : <Play className="w-4 h-4" />}
-              {isPlaying ? "Playing..." : "Listen"}
-            </Button>
-
+          <div className="flex justify-end">
             <Button
               variant="ghost"
               size="sm"
@@ -140,8 +115,8 @@ export default function PhraseCardDetailed({ phrase, isBookmarked, onBookmark }:
           }`}
         >
           <div className="text-center">
-            <h4 className="font-bold mb-4 text-lg uppercase tracking-wide">Cultural Insight</h4>
-            <p className="text-sm leading-relaxed text-white mb-4">{phrase.culturalNote}</p>
+            <h4 className="font-bold mb-4 text-lg uppercase tracking-wide">Cultural Context</h4>
+            <p className="text-sm leading-relaxed text-white mb-4">{tip.detail}</p>
             <div className="text-xs opacity-75">Tap again to flip back</div>
           </div>
         </CardContent>

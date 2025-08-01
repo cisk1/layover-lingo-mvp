@@ -36,7 +36,7 @@ export default function PhraseCard({
   return (
     <div className="perspective-1000">
       <Card
-        className={`bg-[#2c2e31] border-[#3c3e41] hover:shadow-lg transition-shadow cursor-pointer relative h-64  transition-transform duration-500 transform-style-preserve-3d ${
+        className={`bg-[#2c2e31] border-[#3c3e41] hover:shadow-lg transition-shadow cursor-pointer relative h-56  transition-transform duration-500 transform-style-preserve-3d ${
           isFlipped ? "rotate-y-180" : ""
         }`}
         onClick={() => setIsFlipped(!isFlipped)}

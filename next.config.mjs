@@ -9,10 +9,9 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  output: 'export'
-  // If your repo is not at the root domain, set the basePath and assetPrefix:
-  // basePath: '/REPO_NAME',
-  // assetPrefix: '/REPO_NAME/',
+  output: 'export',
+  trailingSlash: true,
+  basePath: process.env.NODE_ENV === 'production' ? '/layover-lingo-mvp' : '',
 }
 
-export default nextConfig;
+export default nextConfig

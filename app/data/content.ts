@@ -16,44 +16,6 @@ export const phraseSpotlights = [
   },
 ]
 
-export const categories = [
-  {
-    id: "essentials",
-    name: "Essentials",
-    count: 20,
-    icon: "Backpack",
-    description: "survival + etiquette",
-  },
-  {
-    id: "greetings",
-    name: "Greetings & Politeness",
-    count: 20,
-    icon: "Hand",
-    description: "meet, thank, excuse",
-  },
-  {
-    id: "money",
-    name: "Money & Shopping",
-    count: 20,
-    icon: "DollarSign",
-    description: "prices, haggling, tipping quirks",
-  },
-  {
-    id: "emergencies",
-    name: "Emergencies & Help",
-    count: 20,
-    icon: "AlertTriangle",
-    description: 'health, police, "translator please"',
-  },
-]
-
-export const languages = [
-  { code: "spanish", name: "Spanish" },
-  { code: "chinese", name: "Chinese" },
-  { code: "japanese", name: "Japanese" },
-  { code: "french", name: "French" },
-]
-
 export const faqItems = [
   {
     question: "Where do your phrases come from?",
@@ -79,5 +41,57 @@ export const faqItems = [
     question: "How do donations help?",
     answer:
       "Donations help us pay our native speaker contributors, expand to new languages, and keep the app free for everyone. We believe language learning should be accessible, and your support makes that possible.",
+  },
+]
+
+export const categories = [
+  {
+    id: "essentials",
+    name: "Travel Essentials",
+    count: 28,
+    icon: "Backpack",
+    description: "Must-know phrases and customs for any trip",
+  },
+  {
+    id: "greetings",
+    name: "Greetings & Social",
+    count: 24,
+    icon: "Hand",
+    description: "Meeting people and social interactions",
+  },
+  {
+    id: "dining",
+    name: "Dining & Food",
+    count: 22,
+    icon: "Utensils",
+    description: "Restaurant etiquette and food culture",
+  },
+  {
+    id: "money",
+    name: "Money & Shopping",
+    count: 18,
+    icon: "DollarSign",
+    description: "Prices, haggling, and payment customs",
+  },
+  {
+    id: "business",
+    name: "Business & Professional",
+    count: 16,
+    icon: "MapPin",
+    description: "Work meetings and professional etiquette",
+  },
+  {
+    id: "emergencies",
+    name: "Emergencies & Help",
+    count: 14,
+    icon: "AlertTriangle",
+    description: "Getting help when you need it most",
+  },
+  {
+    id: "gifts",
+    name: "Gifts & Celebrations",
+    count: 12,
+    icon: "Gift",
+    description: "Gift-giving customs and special occasions",
   },
 ]

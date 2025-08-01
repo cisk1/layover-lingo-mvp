@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
@@ -13,26 +12,37 @@ import {
   Volume2,
   Github,
   Mail,
-  ChevronLeft,
-  ChevronRight,
-  Settings,
+  Zap,
+  Crown,
   Backpack,
   Hand,
   DollarSign,
   AlertTriangle,
+  Users,
+  Utensils,
+  MapPin,
+  Gift,
+  ChevronDown,
 } from "lucide-react"
 import Link from "next/link"
 import QuizOverlay from "./components/quiz-overlay"
-import { phraseSpotlights, categories, languages, faqItems } from "./data/content"
-import SearchBar from "./components/search-bar"
+import SiteHeader from "./components/site-header"
+import CountryFlag from "./components/country-flag"
+import { phraseSpotlights } from "./data/content"
+import { countries } from "./data/countries"
+import { categories } from "./data/categories"
+import CountryDropdownButton from "./components/country-dropdown-button"
+import { useAuth } from "./components/auth-context"
+import { useBookmarks } from "./components/bookmarks-context"
+import IntegratedSearchBar from "./components/integrated-search-bar"
 
 export default function LayoverLingoLanding() {
-  const [selectedLanguage, setSelectedLanguage] = useState("")
+  const [selectedCountry, setSelectedCountry] = useState("")
   const [currentSpotlight, setCurrentSpotlight] = useState(0)
   const [showAboutModal, setShowAboutModal] = useState(false)
   const [showQuizMode, setShowQuizMode] = useState(false)
-  const [quizEnabled, setQuizEnabled] = useState(false)
-  const [bookmarkedPhrases, setBookmarkedPhrases] = useState<string[]>([])
+  const { user } = useAuth()
+  const { bookmarkedItems, isGuestMode } = useBookmarks()
 
   const nextSpotlight = () => {
     setCurrentSpotlight((prev) => (prev + 1) % phraseSpotlights.length)
@@ -42,186 +52,154 @@ export default function LayoverLingoLanding() {
     setCurrentSpotlight((prev) => (prev - 1 + phraseSpotlights.length) % phraseSpotlights.length)
   }
 
-  const toggleBookmark = (phraseId: string) => {
-    setBookmarkedPhrases((prev) =>
-      prev.includes(phraseId) ? prev.filter((id) => id !== phraseId) : [...prev, phraseId],
-    )
+  const scrollToContent = () => {
+    window.scrollTo({
+      top: window.innerHeight,
+      behavior: "smooth",
+    })
   }
 
   return (
     <div className="min-h-screen bg-[#323437]">
+      {/* Site Header */}
+      <SiteHeader />
+
       {/* Hero Section - Google-like */}
-      <section className="min-h-screen flex flex-col justify-center items-center px-4">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-5xl font-bold text-white mb-4 tracking-wide">LayoverLingo</h1>
-          <p className="text-lg md:text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-            A quick reference guide for authentic phrases and local etiquette
-          </p>
-
-          {/* Search Bar - Main Focus */}
-          <div className="max-w-2xl mx-auto mb-8">
-            <SearchBar placeholder="Search any phrase or topic" selectedLanguage={selectedLanguage} />
+      <section className="h-[calc(100vh-4rem)] flex flex-col justify-center items-center px-4 relative">
+        <div className="text-center w-full max-w-4xl mx-auto">
+          {/* Title and Subtitle - Reduced spacing */}
+          <div className="mb-8">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              <span className="text-white">Layover</span>
+              <span className="text-[#e2b714]">Lingo</span>
+            </h1>
+            <p className="text-lg text-gray-400">Quick reference for authentic phrases and local etiquette</p>
           </div>
 
-          {/* Search Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-            <Button
-              onClick={() => {
-                const phrasePacks = document.getElementById("phrase-packs")
-                phrasePacks?.scrollIntoView({ behavior: "smooth" })
-              }}
-              className="bg-[#3c3e41] hover:bg-[#4a4c4f] text-white border-0 px-6 py-3 rounded"
-            >
-              Phrase Packs
-            </Button>
-            <Button
-              onClick={() => {
-                const phraseSpotlight = document.getElementById("phrase-spotlight")
-                phraseSpotlight?.scrollIntoView({ behavior: "smooth" })
-              }}
-              className="bg-[#3c3e41] hover:bg-[#4a4c4f] text-white border-0 px-6 py-3 rounded"
-            >
-              I'm Feeling Lucky
-            </Button>
+          {/* Integrated Search Bar - Centered and wider */}
+          <div className="w-full max-w-3xl mx-auto">
+            <IntegratedSearchBar
+              selectedCountry={selectedCountry}
+              onCountryChange={setSelectedCountry}
+              placeholder="Choose a country, then search phrases..."
+            />
           </div>
-
-          {/* Language Selector - Simplified */}
-          <div className="max-w-md mx-auto mb-4">
-            <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-              <SelectTrigger className="bg-[#2c2e31] border-0 text-white hover:bg-[#35373a]">
-                <SelectValue placeholder="Select a language" />
-              </SelectTrigger>
-              <SelectContent className="bg-[#2c2e31] border-[#3c3e41]">
-                {languages.map((lang) => (
-                  <SelectItem key={lang.code} value={lang.code} className="text-white hover:bg-[#3c3e41]">
-                    {lang.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Tertiary Link */}
-          <button onClick={() => setShowAboutModal(true)} className="text-sm text-[#e2b714] hover:underline">
-            Why phrases, not grammar? →
-          </button>
         </div>
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex justify-center">
-          <svg className="w-16 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 32 16">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M4 6l12 8 12-8" />
-          </svg>
+
+        {/* Scroll Indicator Arrow - Fixed positioning */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+          <Button
+            variant="ghost"
+            onClick={scrollToContent}
+            className="flex flex-col items-center gap-2 text-white hover:text-[#e2b714] hover:bg-transparent group transition-colors duration-300"
+          >
+            <span className="text-sm opacity-70 group-hover:opacity-100">Scroll to explore</span>
+            <div className="w-12 h-8 flex items-center justify-center">
+              <ChevronDown className="w-8 h-8 animate-bounce" />
+            </div>
+          </Button>
         </div>
       </section>
 
-      {/* Phrase Packs Section - Full Screen */}
-      <section id="phrase-packs" className="min-h-screen flex flex-col justify-center items-center px-4">
-        <div className="max-w-6xl mx-auto w-full">
-          <h2 className="text-3xl md:text-5xl font-bold text-center mb-12 text-white">Cultural Phrase Packs</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {categories.map((category) => {
-              const IconComponent =
-                {
-                  Backpack,
-                  Hand,
-                  DollarSign,
-                  AlertTriangle,
-                }[category.icon] || Backpack
-
-              return (
-                <Link key={category.id} href={`/phrase-pack/${category.id}`}>
-                  <Card className="bg-[#2c2e31] border-0 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer h-full">
-                    <CardContent className="p-6 text-center">
-                      <div className="flex justify-center mb-4">
-                        <IconComponent className="w-12 h-12 text-[#e2b714]" />
-                      </div>
-                      <h3 className="text-xl font-semibold mb-2 text-white">{category.name}</h3>
-                      <Badge variant="secondary" className="mb-3">
-                        {category.count} phrases
-                      </Badge>
-                      <p className="text-gray-300">{category.description}</p>
-                    </CardContent>
-                  </Card>
-                </Link>
-              )
-            })}
-          </div>
-        </div>
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex justify-center">
-          <svg className="w-16 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 32 16">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M4 6l12 8 12-8" />
-          </svg>
-        </div>
-      </section>
-
-      {/* Phrase Spotlight Carousel */}
-      <section id="phrase-spotlight" className="px-4 mb-8">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold text-center mb-6 text-white">Phrase Spotlight</h2>
-          <div className="relative">
-            <Card className="bg-[#2c2e31] border-0 shadow-lg">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-3">
-                  <Button variant="ghost" size="sm" onClick={prevSpotlight} className="p-1">
-                    <ChevronLeft className="w-4 h-4 text-white" />
-                  </Button>
-                  <div className="flex space-x-1">
-                    {phraseSpotlights.map((_, index) => (
-                      <div
-                        key={index}
-                        className={`w-1.5 h-1.5 rounded-full ${
-                          index === currentSpotlight ? "bg-[#e2b714]" : "bg-gray-500"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <Button variant="ghost" size="sm" onClick={nextSpotlight} className="p-1">
-                    <ChevronRight className="w-4 h-4 text-white" />
-                  </Button>
-                </div>
-                <div className="text-center">
-                  <h3 className="text-xl font-semibold mb-3 text-[#e2b714]">
-                    {phraseSpotlights[currentSpotlight].phrase}
-                  </h3>
-                  <p className="text-gray-300 leading-relaxed">{phraseSpotlights[currentSpotlight].story}</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Feature Trio */}
-      <section className="px-4 mb-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Feature Trio - Moved up */}
+      <section className="px-4 py-16 bg-[#2a2c2f]">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="w-12 h-12 bg-[#e2b714] rounded-full flex items-center justify-center mx-auto mb-3">
+              <div className="w-12 h-12 bg-[#e2b714] rounded-full flex items-center justify-center mx-auto mb-4">
                 <Volume2 className="w-6 h-6 text-[#323437]" />
               </div>
-              <h3 className="text-lg font-semibold mb-1 text-white">Native-Speaker Audio</h3>
-              <p className="text-gray-300">Hear authentic pronunciation from locals</p>
+              <h3 className="text-lg font-semibold mb-2 text-white">Native-Speaker Audio</h3>
+              <p className="text-gray-400 text-sm mb-3">Hear authentic pronunciation from locals</p>
+              <Badge className="bg-green-500 text-white text-xs">Free</Badge>
             </div>
             <div className="text-center">
-              <div className="w-12 h-12 bg-[#e2b714] rounded-full flex items-center justify-center mx-auto mb-3">
+              <div className="w-12 h-12 bg-[#e2b714] rounded-full flex items-center justify-center mx-auto mb-4">
                 <Bookmark className="w-6 h-6 text-[#323437]" />
               </div>
-              <h3 className="text-lg font-semibold mb-1 text-white">Save Favorites</h3>
-              <p className="text-gray-300">Bookmark phrases for quick reference</p>
+              <h3 className="text-lg font-semibold mb-2 text-white">Save Favorites</h3>
+              <p className="text-gray-400 text-sm mb-3">Bookmark phrases for quick reference</p>
+              <Badge className="bg-green-500 text-white text-xs">Free</Badge>
             </div>
             <div className="text-center">
-              <div className="w-12 h-12 bg-[#e2b714] rounded-full flex items-center justify-center mx-auto mb-3">
-                <Settings className="w-6 h-6 text-[#323437]" />
+              <div className="w-12 h-12 bg-gradient-to-r from-[#e2b714] to-[#d4a613] rounded-full flex items-center justify-center mx-auto mb-4">
+                <Zap className="w-6 h-6 text-[#323437]" />
               </div>
-              <h3 className="text-lg font-semibold mb-1 text-white">Quiz Mode</h3>
-              <p className="text-gray-300">Practice with interactive drills</p>
+              <h3 className="text-lg font-semibold mb-2 text-white">Interactive Learning</h3>
+              <p className="text-gray-400 text-sm mb-3">Quiz mode and progress tracking</p>
+              <Badge className="bg-gradient-to-r from-[#e2b714] to-[#d4a613] text-[#323437] text-xs">
+                <Crown className="w-3 h-3 mr-1" />
+                Pro
+              </Badge>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Countries and Categories Section - Side by Side with Better Alignment */}
+      <section className="py-16 px-4">
+        <div className="max-w-6xl mx-auto w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+            {/* Countries Section */}
+            <div className="flex flex-col">
+              <h2 className="text-2xl font-semibold text-center mb-10 text-white">Explore by Country</h2>
+              <div className="grid grid-cols-2 gap-4 flex-1">
+                {countries.map((country) => (
+                  <Link key={country.code} href={`/country/${country.code}/category/all`}>
+                    <Card className="bg-[#2c2e31] border-0 hover:shadow-md hover:scale-[1.02] transition-all duration-200 cursor-pointer h-full">
+                      <CardContent className="p-4 text-center">
+                        <div className="mb-3">
+                          <CountryFlag flag={country.flag} fallback={country.fallback} size="lg" />
+                        </div>
+                        <h3 className="text-sm font-medium text-white">{country.name}</h3>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Categories Section */}
+            <div className="flex flex-col">
+              <h2 className="text-2xl font-semibold text-center mb-10 text-white">Browse Categories</h2>
+              <div className="grid grid-cols-1 gap-4 flex-1">
+                {categories.map((category) => {
+                  const IconComponent =
+                    {
+                      Backpack,
+                      Hand,
+                      DollarSign,
+                      AlertTriangle,
+                      Users,
+                      Utensils,
+                      MapPin,
+                      Gift,
+                    }[category.icon] || Backpack
+
+                  return (
+                    <Link key={category.id} href={`/country/all/category/${category.id}`}>
+                      <Card className="bg-[#2c2e31] border-0 hover:shadow-md hover:scale-[1.02] transition-all duration-200 cursor-pointer h-full">
+                        <CardContent className="p-4 flex items-center gap-4">
+                          <div className="flex-shrink-0">
+                            <IconComponent className="w-8 h-8 text-[#e2b714]" />
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-semibold text-white">{category.name}</h3>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  )
+                })}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Support Banner */}
-      <section className="px-4 mb-8">
-        <div className="max-w-4xl mx-auto">
+      <section className="px-4 py-8">
+        <div className="max-w-3xl mx-auto">
           <Card className="bg-[#e2b714] text-white">
             <CardContent className="p-6 text-center">
               <p className="text-lg mb-4">Love digging into local speech? Help us keep it free.</p>
@@ -234,50 +212,56 @@ export default function LayoverLingoLanding() {
       </section>
 
       {/* FAQ Section */}
-      <section className="px-4 mb-8">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold text-center mb-6 text-white">Frequently Asked Questions</h2>
+      <section className="px-4 py-12">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-xl font-semibold text-center mb-8 text-white">Frequently Asked Questions</h2>
           <Accordion type="single" collapsible className="w-full">
-            {faqItems.map((item, index) => (
-              <AccordionItem key={index} value={`item-${index}`}>
-                <AccordionTrigger className="text-left text-white">{item.question}</AccordionTrigger>
-                <AccordionContent className="text-gray-300">{item.answer}</AccordionContent>
-              </AccordionItem>
-            ))}
+            <AccordionItem value="item-0">
+              <AccordionTrigger className="text-left text-white">TBD Question 1</AccordionTrigger>
+              <AccordionContent className="text-gray-400">TBD Answer 1</AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-1">
+              <AccordionTrigger className="text-left text-white">TBD Question 2</AccordionTrigger>
+              <AccordionContent className="text-gray-400">TBD Answer 2</AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-2">
+              <AccordionTrigger className="text-left text-white">TBD Question 3</AccordionTrigger>
+              <AccordionContent className="text-gray-400">TBD Answer 3</AccordionContent>
+            </AccordionItem>
           </Accordion>
         </div>
       </section>
 
       {/* Footer */}
       <footer className="bg-[#2c2e31] border-t border-[#3c3e41] px-4 py-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div>
-              <h3 className="font-semibold text-[#e2b714] text-xl mb-2">LayoverLingo</h3>
-              <p className="text-gray-300 text-sm">Explore the world one local phrase at a time.</p>
+              <h3 className="font-semibold text-[#e2b714] text-lg mb-3">LayoverLingo</h3>
+              <p className="text-gray-400 text-sm">Explore the world one local phrase at a time.</p>
             </div>
             <div>
-              <h4 className="font-semibold mb-2 text-white">Links</h4>
-              <ul className="space-y-1 text-sm">
+              <h4 className="font-medium mb-3 text-white">Links</h4>
+              <ul className="space-y-2 text-sm">
                 <li>
-                  <a href="#" className="text-gray-300 hover:text-[#e2b714]">
+                  <a href="#" className="text-gray-400 hover:text-[#e2b714]">
                     Privacy
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-300 hover:text-[#e2b714] flex items-center gap-2">
+                  <a href="#" className="text-gray-400 hover:text-[#e2b714] flex items-center gap-2">
                     <Github className="w-4 h-4" /> GitHub
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-300 hover:text-[#e2b714] flex items-center gap-2">
+                  <a href="#" className="text-gray-400 hover:text-[#e2b714] flex items-center gap-2">
                     <Mail className="w-4 h-4" /> Contact
                   </a>
                 </li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-2 text-white">Newsletter</h4>
+              <h4 className="font-medium mb-3 text-white">Newsletter</h4>
               <div className="flex gap-2">
                 <Input type="email" placeholder="Your email" className="text-sm bg-[#3c3e41] border-0 text-white" />
                 <Button size="sm" className="bg-[#e2b714] hover:bg-[#d4a613] text-[#323437]">
@@ -286,23 +270,8 @@ export default function LayoverLingoLanding() {
               </div>
             </div>
             <div>
-              <h4 className="font-semibold mb-2 text-white">Language</h4>
-              <Select>
-                <SelectTrigger className="w-full bg-[#3c3e41] border-0 text-white">
-                  <SelectValue placeholder="English" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#2c2e31] border-[#3c3e41]">
-                  <SelectItem value="en" className="text-white hover:bg-[#3c3e41]">
-                    English
-                  </SelectItem>
-                  <SelectItem value="es" className="text-white hover:bg-[#3c3e41]">
-                    Español
-                  </SelectItem>
-                  <SelectItem value="fr" className="text-white hover:bg-[#3c3e41]">
-                    Français
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              <h4 className="font-medium mb-3 text-white">Country</h4>
+              <CountryDropdownButton value={selectedCountry} onChange={setSelectedCountry} />
             </div>
           </div>
         </div>
@@ -348,17 +317,7 @@ export default function LayoverLingoLanding() {
       </Dialog>
 
       {/* Quiz Overlay */}
-      {showQuizMode && <QuizOverlay phrases={bookmarkedPhrases} onClose={() => setShowQuizMode(false)} />}
-
-      {/* Quiz Mode Button */}
-      {quizEnabled && bookmarkedPhrases.length > 0 && (
-        <Button
-          onClick={() => setShowQuizMode(true)}
-          className="fixed bottom-6 right-6 bg-[#FFB30F] hover:bg-[#FFB30F]/90 text-white rounded-full p-4 shadow-lg"
-        >
-          Start Quiz ({bookmarkedPhrases.length})
-        </Button>
-      )}
+      {showQuizMode && <QuizOverlay phrases={bookmarkedItems} onClose={() => setShowQuizMode(false)} />}
     </div>
   )
 }

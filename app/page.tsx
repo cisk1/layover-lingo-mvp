@@ -178,7 +178,7 @@ export default function LayoverLingoLanding() {
         <div className="max-w-3xl mx-auto">
           <Card className="bg-[#e2b714] text-white">
             <CardContent className="p-6 text-center">
-              <p className="text-lg mb-4">Love digging into local speech? Help us keep it free.</p>
+              <p className="text-lg mb-4">Love digging into local speech?</p>
               <Button variant="secondary" className="bg-white text-[#e2b714] hover:bg-gray-100">
                 Support LayoverLingo
               </Button>

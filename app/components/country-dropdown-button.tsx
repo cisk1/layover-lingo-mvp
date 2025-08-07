@@ -60,7 +60,7 @@ export default function CountryDropdownButton({
       <Button
         onClick={() => setShowDropdown(!showDropdown)}
         className={cn(
-          "bg-[#2c2e31] hover:bg-[#35373a] text-white border-0 rounded-full px-6 py-3 flex items-center gap-3 shadow-lg transition-all duration-200",
+          "bg-[#2c2e31] hover:bg-[#35373a] text-white border-2 border-[#e2b714] rounded-full px-6 py-3 flex items-center gap-3 shadow-lg transition-all duration-200",
           buttonClassName
         )}
       >

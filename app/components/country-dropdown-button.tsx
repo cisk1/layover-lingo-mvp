@@ -3,16 +3,26 @@
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { ChevronDown, X } from "lucide-react"
+import { ChevronDown, X } from 'lucide-react'
 import { countries, getCountryByCode } from "../data/countries"
 import CountryFlag from "./country-flag"
+import { cn } from "@/lib/utils"
 
 interface CountryDropdownButtonProps {
   value: string
   onChange: (value: string) => void
+  className?: string
+  buttonClassName?: string
+  placeholder?: string
 }
 
-export default function CountryDropdownButton({ value, onChange }: CountryDropdownButtonProps) {
+export default function CountryDropdownButton({
+  value,
+  onChange,
+  className,
+  buttonClassName,
+  placeholder = "Select a country",
+}: CountryDropdownButtonProps) {
   const [showDropdown, setShowDropdown] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -46,10 +56,13 @@ export default function CountryDropdownButton({ value, onChange }: CountryDropdo
   }
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className={cn("relative", className)} ref={dropdownRef}>
       <Button
         onClick={() => setShowDropdown(!showDropdown)}
-        className="bg-[#2c2e31] hover:bg-[#35373a] text-white border-0 rounded-full px-6 py-3 flex items-center gap-3 shadow-lg transition-all duration-200"
+        className={cn(
+          "bg-[#2c2e31] hover:bg-[#35373a] text-white border-0 rounded-full px-6 py-3 flex items-center gap-3 shadow-lg transition-all duration-200",
+          buttonClassName
+        )}
       >
         {selectedCountry ? (
           <>
@@ -57,7 +70,7 @@ export default function CountryDropdownButton({ value, onChange }: CountryDropdo
             <span className="font-medium">{selectedCountry.name}</span>
           </>
         ) : (
-          <span className="font-medium">Select a country</span>
+          <span className="font-medium text-gray-300">{placeholder}</span>
         )}
         <ChevronDown className={`w-4 h-4 transition-transform ${showDropdown ? "rotate-180" : ""}`} />
       </Button>
@@ -87,9 +100,10 @@ export default function CountryDropdownButton({ value, onChange }: CountryDropdo
                   key={country.code}
                   onClick={() => handleCountryChange(country.code)}
                   variant="ghost"
-                  className={`w-full justify-start text-left hover:bg-[#3c3e41] ${
-                    country.code === value ? "bg-[#3c3e41]" : ""
-                  }`}
+                  className={cn(
+                    "w-full justify-start text-left hover:bg-[#3c3e41]",
+                    country.code === value && "bg-[#3c3e41]"
+                  )}
                 >
                   <div className="flex items-center gap-3">
                     <CountryFlag flag={country.flag} fallback={country.fallback} size="md" />

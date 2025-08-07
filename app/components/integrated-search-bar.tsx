@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Search, ArrowRight, ChevronDown, Settings } from "lucide-react"
+import { Search, ArrowRight, ChevronDown, Settings } from 'lucide-react'
 import { getAllPhrases } from "../data/phrase-packs"
 import { countries, getCountryByCode } from "../data/countries"
 import CountryFlag from "./country-flag"
@@ -26,6 +26,7 @@ interface IntegratedSearchBarProps {
   className?: string
   selectedCountry: string
   onCountryChange: (country: string) => void
+  showCountrySelector?: boolean
 }
 
 export default function IntegratedSearchBar({
@@ -34,6 +35,7 @@ export default function IntegratedSearchBar({
   className = "",
   selectedCountry,
   onCountryChange,
+  showCountrySelector = true,
 }: IntegratedSearchBarProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [results, setResults] = useState<SearchResult[]>([])
@@ -42,6 +44,8 @@ export default function IntegratedSearchBar({
   const [isSearchFocused, setIsSearchFocused] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
   const countryRef = useRef<HTMLDivElement>(null)
+
+  const inputRounded = showCountrySelector ? "rounded-r-full rounded-l-none" : "rounded-full"
 
   const selectedCountryData = selectedCountry ? getCountryByCode(selectedCountry) : null
 
@@ -136,57 +140,59 @@ export default function IntegratedSearchBar({
     <div ref={searchRef} className={`relative ${className}`}>
       <div className="relative flex">
         {/* Country Selector - Left Side */}
-        <div ref={countryRef} className="relative">
-          <Button
-            onClick={() => setShowCountryDropdown(!showCountryDropdown)}
-            className="bg-[#2c2e31] hover:bg-[#35373a] text-white border-0 rounded-l-full px-4 h-[60px] flex items-center gap-2 border-r border-[#3c3e41]"
-          >
-            {selectedCountryData ? (
-              <>
-                <CountryFlag flag={selectedCountryData.flag} fallback={selectedCountryData.fallback} size="sm" />
-                <span className="hidden sm:inline text-sm">{selectedCountryData.name}</span>
-              </>
-            ) : (
-              <span className="text-sm text-gray-400">All Countries</span>
-            )}
-            <ChevronDown className={`w-4 h-4 transition-transform ${showCountryDropdown ? "rotate-180" : ""}`} />
-          </Button>
+        {showCountrySelector && (
+          <div ref={countryRef} className="relative">
+            <Button
+              onClick={() => setShowCountryDropdown(!showCountryDropdown)}
+              className="bg-[#2c2e31] hover:bg-[#35373a] text-white border-0 rounded-l-full px-4 h-[60px] flex items-center gap-2 border-r border-[#3c3e41]"
+            >
+              {selectedCountryData ? (
+                <>
+                  <CountryFlag flag={selectedCountryData.flag} fallback={selectedCountryData.fallback} size="sm" />
+                  <span className="hidden sm:inline text-sm">{selectedCountryData.name}</span>
+                </>
+              ) : (
+                <span className="text-sm text-gray-400">All Countries</span>
+              )}
+              <ChevronDown className={`w-4 h-4 transition-transform ${showCountryDropdown ? "rotate-180" : ""}`} />
+            </Button>
 
-          {/* Country Dropdown */}
-          {showCountryDropdown && (
-            <Card className="absolute top-full left-0 mt-2 bg-[#2c2e31] border-[#3c3e41] shadow-xl z-50 min-w-48 max-h-64 overflow-y-auto">
-              <CardContent className="p-2">
-                <div className="space-y-1">
-                  <Button
-                    onClick={() => handleCountrySelect("")}
-                    variant="ghost"
-                    className={`w-full justify-start text-left hover:bg-[#3c3e41] ${
-                      !selectedCountry ? "bg-[#3c3e41]" : ""
-                    }`}
-                  >
-                    <span className="text-white">All Countries</span>
-                  </Button>
-                  <div className="border-t border-[#3c3e41] my-1" />
-                  {countries.map((country) => (
+            {/* Country Dropdown */}
+            {showCountryDropdown && (
+              <Card className="absolute top-full left-0 mt-2 bg-[#2c2e31] border-[#3c3e41] shadow-xl z-50 min-w-48 max-h-64 overflow-y-auto">
+                <CardContent className="p-2">
+                  <div className="space-y-1">
                     <Button
-                      key={country.code}
-                      onClick={() => handleCountrySelect(country.code)}
+                      onClick={() => handleCountrySelect("")}
                       variant="ghost"
                       className={`w-full justify-start text-left hover:bg-[#3c3e41] ${
-                        country.code === selectedCountry ? "bg-[#3c3e41]" : ""
+                        !selectedCountry ? "bg-[#3c3e41]" : ""
                       }`}
                     >
-                      <div className="flex items-center gap-3">
-                        <CountryFlag flag={country.flag} fallback={country.fallback} size="sm" />
-                        <span className="text-white">{country.name}</span>
-                      </div>
+                      <span className="text-white">All Countries</span>
                     </Button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+                    <div className="border-t border-[#3c3e41] my-1" />
+                    {countries.map((country) => (
+                      <Button
+                        key={country.code}
+                        onClick={() => handleCountrySelect(country.code)}
+                        variant="ghost"
+                        className={`w-full justify-start text-left hover:bg-[#3c3e41] ${
+                          country.code === selectedCountry ? "bg-[#3c3e41]" : ""
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <CountryFlag flag={country.flag} fallback={country.fallback} size="sm" />
+                          <span className="text-white">{country.name}</span>
+                        </div>
+                      </Button>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        )}
 
         {/* Search Input - Right Side */}
         <div className="relative flex-1">
@@ -197,7 +203,7 @@ export default function IntegratedSearchBar({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={handleSearchFocus}
-            className="pl-12 pr-12 h-[60px] text-lg bg-[#2c2e31] border-0 focus:ring-2 focus:ring-[#e2b714] rounded-r-full rounded-l-none text-white placeholder-gray-400 hover:bg-[#35373a] transition-colors"
+            className={`pl-12 pr-12 h-[60px] text-lg bg-[#2c2e31] border-0 focus:ring-2 focus:ring-[#e2b714] text-white placeholder-gray-400 hover:bg-[#35373a] transition-colors ${inputRounded}`}
           />
           {searchQuery && (
             <div className="absolute right-4 top-1/2 transform -translate-y-1/2">

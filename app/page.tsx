@@ -1,27 +1,26 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Bookmark, Volume2, Github, Mail, Zap, Crown, Backpack, Hand, DollarSign, AlertTriangle, Users, Utensils, MapPin, Gift, ChevronDown } from 'lucide-react'
-import Link from 'next/link'
-import QuizOverlay from './components/quiz-overlay'
-import SiteHeader from './components/site-header'
-import CountryFlag from './components/country-flag'
-import { phraseSpotlights } from './data/content'
-import { countries } from './data/countries'
-import { categories } from './data/categories'
-import { useAuth } from './components/auth-context'
-import { useBookmarks } from './components/bookmarks-context'
-import CombinedCountrySearch from './components/combined-country-search'
-import GlobeCountryPicker from './components/globe-country-picker'
+import Link from "next/link"
+import QuizOverlay from "./components/quiz-overlay"
+import SiteHeader from "./components/site-header"
+import CountryFlag from "./components/country-flag"
+import { phraseSpotlights } from "./data/content"
+import { countries } from "./data/countries"
+import { categories } from "./data/categories"
+import { useAuth } from "./components/auth-context"
+import { useBookmarks } from "./components/bookmarks-context"
+import CombinedCountrySearch from "./components/combined-country-search"
 
 export default function LayoverLingoLanding() {
-  const [selectedCountry, setSelectedCountry] = useState('')
+  const [selectedCountry, setSelectedCountry] = useState("")
   const [currentSpotlight, setCurrentSpotlight] = useState(0)
   const [showAboutModal, setShowAboutModal] = useState(false)
   const [showQuizMode, setShowQuizMode] = useState(false)
@@ -39,7 +38,7 @@ export default function LayoverLingoLanding() {
   const scrollToContent = () => {
     window.scrollTo({
       top: window.innerHeight,
-      behavior: 'smooth',
+      behavior: "smooth",
     })
   }
 
@@ -59,12 +58,8 @@ export default function LayoverLingoLanding() {
             <p className="text-lg text-gray-400">Quick reference for authentic phrases and local etiquette</p>
           </div>
 
-          {/* Combined country -> search */}
-          <CombinedCountrySearch
-            selectedCountry={selectedCountry}
-            onCountryChange={setSelectedCountry}
-            className="w-full"
-          />
+          {/* Combined selector -> search morph */}
+          <CombinedCountrySearch selectedCountry={selectedCountry} onCountryChange={setSelectedCountry} className="w-full" />
         </div>
 
         {/* Scroll Indicator Arrow */}
@@ -121,10 +116,23 @@ export default function LayoverLingoLanding() {
       <section className="py-16 px-4">
         <div className="max-w-6xl mx-auto w-full">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-            {/* Countries Section with Globe */}
+            {/* Countries Section - back to nice list */}
             <div className="flex flex-col">
-              <h2 className="text-2xl font-semibold text-center mb-6 text-white">Explore by Country</h2>
-              <GlobeCountryPicker />
+              <h2 className="text-2xl font-semibold text-center mb-10 text-white">Explore by Country</h2>
+              <div className="grid grid-cols-2 gap-4 flex-1">
+                {countries.map((country) => (
+                  <Link key={country.code} href={`/country/${country.code}/category/all`}>
+                    <Card className="bg-[#2c2e31] border-0 hover:shadow-md hover:scale-[1.02] transition-all duration-200 cursor-pointer h-full">
+                      <CardContent className="p-4 text-center">
+                        <div className="mb-3">
+                          <CountryFlag flag={country.flag} fallback={country.fallback} size="lg" />
+                        </div>
+                        <h3 className="text-sm font-medium text-white">{country.name}</h3>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
             </div>
 
             {/* Categories Section */}
@@ -170,7 +178,7 @@ export default function LayoverLingoLanding() {
         <div className="max-w-3xl mx-auto">
           <Card className="bg-[#e2b714] text-white">
             <CardContent className="p-6 text-center">
-              <p className="text-lg mb-4">Love digging into local speech?</p>
+              <p className="text-lg mb-4">Love digging into local speech? Help us keep it free.</p>
               <Button variant="secondary" className="bg-white text-[#e2b714] hover:bg-gray-100">
                 Support LayoverLingo
               </Button>
@@ -239,11 +247,8 @@ export default function LayoverLingoLanding() {
             </div>
             <div>
               <h4 className="font-medium mb-3 text-white">Country</h4>
-              {/* Keep a secondary selector in footer */}
-              {/* Could be replaced with a link to the globe section */}
-              {/* <CountryDropdownButton value={selectedCountry} onChange={setSelectedCountry} /> */}
               <a href="#explore-by-country" className="text-gray-400 hover:text-[#e2b714]">
-                Choose via the globe ↑
+                Choose via the list ↑
               </a>
             </div>
           </div>
@@ -274,7 +279,7 @@ export default function LayoverLingoLanding() {
               Found an error or want to suggest a phrase?
               <a href="#" className="text-[#e2b714] hover:underline ml-1">
                 Contact us
-              </a>{' '}
+              </a>{" "}
               - we love hearing from our community!
             </p>
             <div className="pt-4">

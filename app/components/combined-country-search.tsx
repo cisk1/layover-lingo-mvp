@@ -12,6 +12,7 @@ import CountryDropdownButton from "./country-dropdown-button"
 import CountryFlag from "./country-flag"
 import { getAllPhrases } from "../data/phrase-packs"
 import { getCountryByCode } from "../data/countries"
+import { performIntentAwareSearch, type SearchResult as IntentSearchResult } from "../lib/search-utils"
 import Link from "next/link"
 
 interface SearchResult {
@@ -25,6 +26,8 @@ interface SearchResult {
   romanization?: string
   context?: string
   culturalNote?: string
+  relevanceScore?: number
+  matchType?: 'exact' | 'semantic' | 'contextual' | 'cultural'
 }
 
 interface CombinedCountrySearchProps {
@@ -71,20 +74,28 @@ export default function CombinedCountrySearch({
       setShowResults(false)
       return
     }
-    const filtered = allPhrases
-      .filter((p: any) => {
-        const q = query.toLowerCase()
-        const matchesSearch =
-          p.phrase.toLowerCase().includes(q) ||
-          p.translation.toLowerCase().includes(q) ||
-          (p.romanization?.toLowerCase?.().includes(q) ?? false) ||
-          (p.context?.toLowerCase?.().includes(q) ?? false) ||
-          (p.culturalNote?.toLowerCase?.().includes(q) ?? false)
-
-        const matchesCountry = !selectedCountryData || p.country === selectedCountryData.name
-        return matchesSearch && matchesCountry
-      })
+    
+    // Use intent-aware search
+    const intentResults = performIntentAwareSearch(query, allPhrases)
+    
+    // Filter by country if selected
+    const filtered = intentResults
+      .filter((result) => !selectedCountryData || result.content.country === selectedCountryData.name)
       .slice(0, 8)
+      .map((result) => ({
+        id: result.content.id,
+        phrase: result.content.phrase,
+        translation: result.content.translation,
+        language: result.content.language,
+        packName: result.content.packName || '',
+        packId: result.content.packId || '',
+        country: result.content.country,
+        romanization: result.content.romanization,
+        context: result.content.context,
+        culturalNote: result.content.culturalNote,
+        relevanceScore: result.relevanceScore,
+        matchType: result.matchType
+      }))
 
     setResults(filtered as SearchResult[])
     setShowResults(true)
@@ -136,6 +147,36 @@ export default function CombinedCountrySearch({
         return "bg-blue-500"
       default:
         return "bg-gray-500"
+    }
+  }
+
+  const getMatchTypeColor = (matchType?: string) => {
+    switch (matchType) {
+      case "exact":
+        return "text-green-400"
+      case "semantic":
+        return "text-blue-400"
+      case "contextual":
+        return "text-yellow-400"
+      case "cultural":
+        return "text-purple-400"
+      default:
+        return "text-gray-400"
+    }
+  }
+
+  const getMatchTypeIcon = (matchType?: string) => {
+    switch (matchType) {
+      case "exact":
+        return "🎯"
+      case "semantic":
+        return "💡"
+      case "contextual":
+        return "🔗"
+      case "cultural":
+        return "🌍"
+      default:
+        return "🔍"
     }
   }
 
@@ -232,14 +273,26 @@ export default function CombinedCountrySearch({
                           >
                             <div className="flex items-center justify-between">
                               <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className="text-[#e2b714] font-medium">{result.phrase}</span>
-                                  <Badge className={`${getLanguageColor(result.language)} text-white text-xs px-2 py-0`}>
-                                    {result.language}
-                                  </Badge>
-                                </div>
-                                <div className="text-white text-sm mb-1">{result.translation}</div>
-                                <div className="text-gray-400 text-xs">in {result.packName}</div>
+                                                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[#e2b714] font-medium">{result.phrase}</span>
+                          <Badge className={`${getLanguageColor(result.language)} text-white text-xs px-2 py-0`}>
+                            {result.language}
+                          </Badge>
+                          {result.matchType && (
+                            <span className={`text-xs ${getMatchTypeColor(result.matchType)}`}>
+                              {getMatchTypeIcon(result.matchType)}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-white text-sm mb-1">{result.translation}</div>
+                        <div className="flex items-center justify-between">
+                          <div className="text-gray-400 text-xs">in {result.packName}</div>
+                          {result.relevanceScore && (
+                            <div className="text-xs text-gray-500">
+                              {Math.round(result.relevanceScore)}% match
+                            </div>
+                          )}
+                        </div>
                               </div>
                               <ArrowRight className="w-4 h-4 text-gray-400" />
                             </div>

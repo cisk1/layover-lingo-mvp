@@ -4,8 +4,9 @@ import { useState, useEffect, useRef } from "react"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Search, ArrowRight } from "lucide-react"
+import { Search, ArrowRight, Sparkles } from "lucide-react"
 import { getAllPhrases } from "../data/phrase-packs"
+import { performIntentAwareSearch, getSearchSuggestions, type SearchResult as IntentSearchResult } from "../lib/search-utils"
 import Link from "next/link"
 
 interface SearchResult {
@@ -15,6 +16,8 @@ interface SearchResult {
   language: string
   packName: string
   packId: string
+  relevanceScore?: number
+  matchType?: 'exact' | 'semantic' | 'contextual' | 'cultural'
 }
 
 interface SearchBarProps {
@@ -43,22 +46,24 @@ export default function SearchBar({
     }
 
     const allPhrases = getAllPhrases()
-    const filteredResults = allPhrases
-      .filter((phrase) => {
-        const query = searchQuery.toLowerCase()
-        const matchesSearch =
-          phrase.phrase.toLowerCase().includes(query) ||
-          phrase.translation.toLowerCase().includes(query) ||
-          phrase.romanization.toLowerCase().includes(query) ||
-          phrase.context.toLowerCase().includes(query) ||
-          phrase.culturalNote.toLowerCase().includes(query)
-
-        // Filter by selected language if one is chosen
-        const matchesLanguage = !selectedLanguage || phrase.language === selectedLanguage
-
-        return matchesSearch && matchesLanguage
-      })
+    
+    // Use intent-aware search
+    const intentResults = performIntentAwareSearch(searchQuery, allPhrases)
+    
+    // Filter by selected language if one is chosen
+    const filteredResults = intentResults
+      .filter((result) => !selectedLanguage || result.content.language === selectedLanguage)
       .slice(0, 8) // Limit to 8 results
+      .map((result) => ({
+        id: result.content.id,
+        phrase: result.content.phrase,
+        translation: result.content.translation,
+        language: result.content.language,
+        packName: result.content.packName || '',
+        packId: result.content.packId || '',
+        relevanceScore: result.relevanceScore,
+        matchType: result.matchType
+      }))
 
     setResults(filteredResults as SearchResult[])
     setShowResults(true)
@@ -98,17 +103,50 @@ export default function SearchBar({
     }
   }
 
+  const getMatchTypeColor = (matchType?: string) => {
+    switch (matchType) {
+      case "exact":
+        return "text-green-400"
+      case "semantic":
+        return "text-blue-400"
+      case "contextual":
+        return "text-yellow-400"
+      case "cultural":
+        return "text-purple-400"
+      default:
+        return "text-gray-400"
+    }
+  }
+
+  const getMatchTypeIcon = (matchType?: string) => {
+    switch (matchType) {
+      case "exact":
+        return "🎯"
+      case "semantic":
+        return "💡"
+      case "contextual":
+        return "🔗"
+      case "cultural":
+        return "🌍"
+      default:
+        return "🔍"
+    }
+  }
+
   return (
     <div ref={searchRef} className={`relative ${className}`}>
       <div className="relative">
         <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+        {searchQuery && (
+          <Sparkles className="absolute left-10 top-1/2 transform -translate-y-1/2 text-[#e2b714] w-4 h-4" />
+        )}
         <Input
           type="text"
           placeholder={placeholder}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onFocus={() => searchQuery && setShowResults(true)}
-          className="pl-12 pr-12 py-4 text-lg bg-[#2c2e31] border-0 focus:ring-2 focus:ring-[#e2b714] rounded-full text-white placeholder-gray-400 hover:bg-[#35373a] transition-colors"
+          className={`pl-12 pr-12 py-4 text-lg bg-[#2c2e31] border-0 focus:ring-2 focus:ring-[#e2b714] rounded-full text-white placeholder-gray-400 hover:bg-[#35373a] transition-colors ${searchQuery ? 'pl-16' : 'pl-12'}`}
         />
         {searchQuery && (
           <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
@@ -140,9 +178,21 @@ export default function SearchBar({
                           <Badge className={`${getLanguageColor(result.language)} text-white text-xs px-2 py-0`}>
                             {result.language}
                           </Badge>
+                          {result.matchType && (
+                            <span className={`text-xs ${getMatchTypeColor(result.matchType)}`}>
+                              {getMatchTypeIcon(result.matchType)}
+                            </span>
+                          )}
                         </div>
                         <div className="text-white text-sm mb-1">{result.translation}</div>
-                        <div className="text-gray-400 text-xs">in {result.packName}</div>
+                        <div className="flex items-center justify-between">
+                          <div className="text-gray-400 text-xs">in {result.packName}</div>
+                          {result.relevanceScore && (
+                            <div className="text-xs text-gray-500">
+                              {Math.round(result.relevanceScore)}% match
+                            </div>
+                          )}
+                        </div>
                       </div>
                       <ArrowRight className="w-4 h-4 text-gray-400" />
                     </div>
